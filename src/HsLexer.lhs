@@ -27,12 +27,12 @@ A Haskell lexer, based on the Prelude function \hs{lex}.
 >                               |  Char String
 >                               |  String String
 >                               |  Special Char
->                               |  Comment String
->                               |  Nested String
+>                               |  Comment String String
+>                               |  Nested String String String
 >                               |  Pragma String
 >                               |  Keyword String
->                               |  TeX Doc             -- for inline \TeX
->                               |  Replacement Doc     -- and format replacements
+>                               |  TeX String Doc String   -- for inline \TeX
+>                               |  Replacement Doc         -- and format replacements
 >                               |  Qual [String] Token
 >                               |  Op Token
 >                                  deriving (Eq, Show)
@@ -63,17 +63,18 @@ hierarchical modules. Also added Pragma.
 > string (Char s)               =  s
 > string (String s)             =  s
 > string (Special c)            =  [c]
-> string (Comment s)            =  "--" ++ s
-> string (Nested s)             =  "{-" ++ s ++ "-}"
+> string (Comment pre s)        =  pre ++ s
+> string (Nested pre s post)    =  pre ++ s ++ post
 > string (Pragma s)             =  "{-#" ++ s ++ "#-}"
 > string (Keyword s)            =  s
-> string (TeX (Text s))         =  "{-\"" ++ s ++ "\"-}"
+> string (TeX pre (Text s) post)
+>                               =  pre ++ s ++ post
 > string (Replacement (Text s)) =  "\"" ++ s ++ "\""
 
 This change is by ks, 14.05.2003, to make the @poly@ formatter work.
 This should probably be either documented better or be removed again.
 
-> string (TeX _)                =  "" -- |impossible "string"|
+> string (TeX _ _ _)            =  "" -- |impossible "string"|
 > string (Replacement _)        =  "" -- |impossible "string"|
 > string (Qual m s)             =  concatMap (++".") m ++ string s
 > string (Op s)                 =  "`" ++ string s ++ "`"
@@ -110,20 +111,20 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >   | not (null s') && isSymbol lang (head s')
 >                               =  case s' of
 >                                    (c : s'') -> return (varsymid lang ("--" ++ d ++ [c]), s'')
->   | otherwise                 =  return (Comment t, u)
+>   | otherwise                 =  return (Comment "--" t, u)
 >   where (d, s') = span (== '-') s
 >         (t, u)  = break (== '\n') s'
 > lex' lang ('{' : '-' : '"' : s)
 >                               =  do let (t, u) = inlineTeX s
 >                                     v <- match "\"-}" u
->                                     return (TeX (Text t), v)
+>                                     return (TeX "{-\"" (Text t) "\"-}", v)
 > lex' lang ('{' : '-' : '#' : s)
 >                               =  do let (t, u) = nested 0 s
 >                                     v <- match "#-}" u
 >                                     return (Pragma t, v)
 > lex' lang ('{' : '-' : s)     =  do let (t, u) = nested 0 s
 >                                     v <- match "-}" u
->                                     return (Nested t, v)
+>                                     return (Nested "{-" t "-}", v)
 > lex' lang (c : s)
 >     | isSpace c               =  let (t, u) = span isSpace s in return (Space (c : t), u)
 >     | isSpecial lang c        =  Just (Special c, s)
@@ -363,18 +364,18 @@ an improvement.
 \NB Only @([])@ are classified as delimiters; @{}@ are separators since
 they do not bracket expressions.
 
->     catCode (Comment _)       =  White
->     catCode (Nested _)        =  White
+>     catCode (Comment _ _)     =  White
+>     catCode (Nested _ _ _)    =  White
 >     catCode (Pragma _)        =  White
 >     catCode (Keyword _)       =  Sep
->     catCode (TeX (Text _))    =  White
+>     catCode (TeX _ (Text _) _)=  White
 >     catCode (Replacement (Text _))
 >                               =  White
 
 The following change is by ks, 14.05.2003.
 This is related to the change above in function |string|.
 
->     catCode (TeX _)           =  NoSep -- |impossible "catCode"|
+>     catCode (TeX _ _ _)       =  NoSep -- |impossible "catCode"|
 >     catCode (Replacement _)   =  NoSep
 >     catCode (Qual _ t)        =  catCode t
 >     catCode (Op _)            =  Sep

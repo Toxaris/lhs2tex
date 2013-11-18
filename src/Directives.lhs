@@ -158,7 +158,7 @@ substitution directive should be invoked here.
 >   where
 >   subst :: [String] -> [Token] -> Subst
 >   subst args rhs ds           =  catenate (map sub rhs)
->       where sub (TeX d)       =  d
+>       where sub (TeX _ d _)   =  d
 >             sub (Replacement d)
 >                               = d
 >             sub (Varid x)     =  case FM.lookup x (FM.fromList (zip args ds)) of
@@ -177,7 +177,7 @@ because "=" will never occur in a Varid constructor.
 > varsym Agda s                 =  satisfy (\ x -> x == Varsym s || x == Varid s) -- Agda has no symbol/id distinction
 > varsym Haskell s              =  satisfy (== (Varsym s))
 >
-> isTeX (TeX _)                 =  True
+> isTeX (TeX _ _ _)             =  True
 > isTeX (Replacement _)         =  True
 > isTeX _                       =  False
 
@@ -259,7 +259,7 @@ Hilfsfunktionen.
 
 > parse                         :: Lang -> Parser Token a -> String -> Either Exc a
 > parse lang p str              =  do ts <- tokenize lang str
->                                     let ts' = map (\t -> case t of TeX x -> Replacement x; _ -> t) .
+>                                     let ts' = map (\t -> case t of TeX _ x _ -> Replacement x; _ -> t) .
 >                                               filter (\t -> catCode t /= White || isTeX t) $ ts
 >                                     maybe (Left msg) Right (run p ts')
 >     where msg                 =  ("syntax error in directive", str)
