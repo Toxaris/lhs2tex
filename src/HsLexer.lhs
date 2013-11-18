@@ -101,9 +101,12 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >
 > lex'                          :: Lang -> String -> Maybe (Token, String)
 > lex' lang ""                  =  Nothing
-> lex' lang ('\'' : s)          =  do let (t, u) = lexLitChar s
->                                     v <- match "\'" u
->                                     return (Char ("'" ++ t ++ "'"), v)
+> lex' lang ('\'' : s@(_ : '\'' : _))
+>                               = charLiteral lang s
+> lex' lang ('\'' : c : s)
+>   | isUpper c                 = let (t, u) = span (isIdChar lang) s in return (Conid ('\'' : c : t), u)
+>   | isLower c                 = let (t, u) = span (isIdChar lang) s in return (classify lang ('\'' : c : t), u)
+> lex' lang ('\'' : s)          = charLiteral lang s
 > lex' lang ('"' : s)           =  do let (t, u) = lexLitStr s
 >                                     v <- match "\"" u
 >                                     return (String ("\"" ++ t ++ "\""), v)
@@ -196,12 +199,15 @@ incorrectly reject programs that contain comments like the
 following one: {- start normal, but close as pragma #-} ...
 I don't expect this to be a problem, though.
 
+> charLiteral lang s          = do let (t, u) = lexLitChar s
+>                                  v <- match "\'" u
+>                                  return (Char ("'" ++ t ++ "'"), v)
+>
 > lexLitChar, lexLitStr         :: String -> (String, String)
 > lexLitChar []                 =  ([], [])
 > lexLitChar ('\'' : s)         =  ([], '\'' : s)
 > lexLitChar ('\\' : c : s)     =  '\\' <| c <| lexLitChar s
 > lexLitChar (c : s)            =  c <| lexLitChar s
->
 > lexLitStr []                  =  ([], [])
 > lexLitStr ('"' : s)           =  ([], '"' : s)
 > lexLitStr ('\\' : c : s)      =  '\\' <| c <| lexLitStr s
