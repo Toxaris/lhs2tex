@@ -159,7 +159,9 @@ substitution directive should be invoked here.
 >   subst :: [String] -> [Token] -> Subst
 >   subst args rhs ds           =  catenate (map sub rhs)
 >       where sub (TeX _ d)     =  d
->             sub (Varid x)     =  FM.fromList (zip args ds) ! x
+>             sub (Varid x)     =  case FM.lookup x (FM.fromList (zip args ds)) of
+>                                    Just y -> y
+>                                    Nothing -> error $ "unbound variable: " ++ x
 > -- TODO: The above lookup can fail badly if unknown variables are used on the rhs of a subst.
 
 \Todo{unbound variables behandeln.}
