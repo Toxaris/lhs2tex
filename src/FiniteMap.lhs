@@ -51,7 +51,7 @@ part. \NB |Node [('a', empty)] Nothing| is not legal.
 Derived functions.
 
 > (!)                           :: (Ord a) => Trie a b -> [a] -> b
-> t ! k                         =  fromJust (lookup k t)
+> t ! k                         =  fromMaybe (error "lookup failed") (lookup k t)
 
 Auxiliary functions.
 %{
