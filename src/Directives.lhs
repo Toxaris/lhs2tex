@@ -79,7 +79,7 @@ Format directives. \NB @%format ( = "(\;"@ is legal.
 >       | null t && not (null w) && (null v || head w == '_')
 >                               =  underscore f s
 >       | otherwise             =  [f (reverse w)
->                                  , TeX False
+>                                  , Replacement
 >                                        (Text ((if   not (null v)
 >                                                then "_{" ++ reverse v ++ "}" 
 >                                                else ""
@@ -106,11 +106,11 @@ substitution directive should be invoked here.
 >     underscore f s
 >                               =  [f t]
 >                                  ++ if null u then []
->                                               else [TeX False (Text "_{")]
+>                                               else [Replacement (Text "_{")]
 >                                                    ++
 >                                                    proc_u
 >                                                    ++
->                                                    [TeX False (Text "}")]
+>                                                    [Replacement (Text "}")]
 >         where (t, u)          =  break (== '_') s
 >               tok_u           =  tokenize lang (tail u)
 >               proc_u          =  case tok_u of
@@ -158,7 +158,9 @@ substitution directive should be invoked here.
 >   where
 >   subst :: [String] -> [Token] -> Subst
 >   subst args rhs ds           =  catenate (map sub rhs)
->       where sub (TeX _ d)     =  d
+>       where sub (TeX d)       =  d
+>             sub (Replacement d)
+>                               = d
 >             sub (Varid x)     =  case FM.lookup x (FM.fromList (zip args ds)) of
 >                                    Just y -> y
 >                                    Nothing -> error $ "unbound variable: " ++ x
@@ -175,7 +177,8 @@ because "=" will never occur in a Varid constructor.
 > varsym Agda s                 =  satisfy (\ x -> x == Varsym s || x == Varid s) -- Agda has no symbol/id distinction
 > varsym Haskell s              =  satisfy (== (Varsym s))
 >
-> isTeX (TeX _ _)               =  True
+> isTeX (TeX _)                 =  True
+> isTeX (Replacement _)         =  True
 > isTeX _                       =  False
 
 % - - - - - - - - - - - - - - - = - - - - - - - - - - - - - - - - - - - - - - -
@@ -256,7 +259,7 @@ Hilfsfunktionen.
 
 > parse                         :: Lang -> Parser Token a -> String -> Either Exc a
 > parse lang p str              =  do ts <- tokenize lang str
->                                     let ts' = map (\t -> case t of TeX _ x -> TeX False x; _ -> t) .
+>                                     let ts' = map (\t -> case t of TeX x -> Replacement x; _ -> t) .
 >                                               filter (\t -> catCode t /= White || isTeX t) $ ts
 >                                     maybe (Left msg) Right (run p ts')
 >     where msg                 =  ("syntax error in directive", str)

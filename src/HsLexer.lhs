@@ -31,7 +31,8 @@ A Haskell lexer, based on the Prelude function \hs{lex}.
 >                               |  Nested String
 >                               |  Pragma String
 >                               |  Keyword String
->                               |  TeX Bool Doc        -- for inline \TeX (True) and format replacements (False)
+>                               |  TeX Doc             -- for inline \TeX
+>                               |  Replacement Doc     -- and format replacements
 >                               |  Qual [String] Token
 >                               |  Op Token
 >                                  deriving (Eq, Show)
@@ -66,13 +67,14 @@ hierarchical modules. Also added Pragma.
 > string (Nested s)             =  "{-" ++ s ++ "-}"
 > string (Pragma s)             =  "{-#" ++ s ++ "#-}"
 > string (Keyword s)            =  s
-> string (TeX True (Text s))    =  "{-\"" ++ s ++ "\"-}"
-> string (TeX False (Text s))   =  "\"" ++ s ++ "\""
+> string (TeX (Text s))         =  "{-\"" ++ s ++ "\"-}"
+> string (Replacement (Text s)) =  "\"" ++ s ++ "\""
 
 This change is by ks, 14.05.2003, to make the @poly@ formatter work.
 This should probably be either documented better or be removed again.
 
-> string (TeX _ _)              =  "" -- |impossible "string"|
+> string (TeX _)                =  "" -- |impossible "string"|
+> string (Replacement _)        =  "" -- |impossible "string"|
 > string (Qual m s)             =  concatMap (++".") m ++ string s
 > string (Op s)                 =  "`" ++ string s ++ "`"
 
@@ -114,7 +116,7 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 > lex' lang ('{' : '-' : '"' : s)
 >                               =  do let (t, u) = inlineTeX s
 >                                     v <- match "\"-}" u
->                                     return (TeX True (Text t), v)
+>                                     return (TeX (Text t), v)
 > lex' lang ('{' : '-' : '#' : s)
 >                               =  do let (t, u) = nested 0 s
 >                                     v <- match "#-}" u
@@ -365,12 +367,15 @@ they do not bracket expressions.
 >     catCode (Nested _)        =  White
 >     catCode (Pragma _)        =  White
 >     catCode (Keyword _)       =  Sep
->     catCode (TeX _ (Text _))  =  White
+>     catCode (TeX (Text _))    =  White
+>     catCode (Replacement (Text _))
+>                               =  White
 
 The following change is by ks, 14.05.2003.
 This is related to the change above in function |string|.
 
->     catCode (TeX _ _)         =  NoSep -- |impossible "catCode"|
+>     catCode (TeX _)           =  NoSep -- |impossible "catCode"|
+>     catCode (Replacement _)   =  NoSep
 >     catCode (Qual _ t)        =  catCode t
 >     catCode (Op _)            =  Sep
 >     token                     =  id

@@ -174,7 +174,7 @@ as well.
 >   args                        :: (CToken tok) => [Atom (Pos tok)] -> [Pos tok]
 >   args es                     =  concat [ sp ++ snd (eval'' False i []) | i <- es ] -- $\cong$ Applikation
 >   sp                          :: (CToken tok) => [Pos tok]
->   sp | auto                   =  [fromToken (TeX False sub'space)]
+>   sp | auto                   =  [fromToken (Replacement sub'space)]
 >      | otherwise              =  []
 
 To support macros of the form @%format Parser (a) = a@.

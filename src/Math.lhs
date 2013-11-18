@@ -156,16 +156,16 @@ after a keyword (hence |before b| really means not immediately after).
 >         u | selfSpacing u     -> t : before False ts
 >         Special c
 >           | c `elem` ",;([{"  -> t : before False ts
->         Keyword _             -> [ fromToken (TeX False sub'space) | b ] ++ t : after ts
+>         Keyword _             -> [ fromToken (Replacement sub'space) | b ] ++ t : after ts
 >         _                     -> t : before True ts
 > 
 >     after []                  =  []
 >     after (t : ts)            =  case token t of
 >         u | selfSpacing u     -> t : before False ts
 >         Special c
->           | c `elem` ",;([{"  -> fromToken (TeX False sub'space) : t : before False ts
->         Keyword _             -> fromToken (TeX False sub'space) : t : after ts
->         _                     -> fromToken (TeX False sub'space) : t : before True ts
+>           | c `elem` ",;([{"  -> fromToken (Replacement sub'space) : t : before False ts
+>         Keyword _             -> fromToken (Replacement sub'space) : t : after ts
+>         _                     -> fromToken (Replacement sub'space) : t : before True ts
 
 Operators are `self spacing'.
 
