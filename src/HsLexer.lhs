@@ -132,7 +132,7 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >     | isSpace c               =  let (t, u) = span isSpace s in return (Space (c : t), u)
 >     | isSpecial lang c        =  Just (Special c, s)
 >     | isUpper c               =  let (t, u) = span (isIdChar lang) s in return (Conid (c : t), u)
->     | isLower c || c == '_'   =  let (t, u) = span (isIdChar lang) s in return (classify (c : t), u)
+>     | isLower c || c == '_'   =  let (t, u) = span (isIdChar lang) s in return (classify lang (c : t), u)
 >     | c == ':'                =  let (t, u) = span (isSymbol lang) s in return (consymid lang (c : t), u)
 >     | isDigit c               =  do let (ds, t) = span isDigit s
 >                                     (fe, u)  <- lexFracExp t
@@ -142,11 +142,6 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >     where
 >     numeral Agda              =  Varid
 >     numeral Haskell           =  Numeral
->     classify s
->         | s `elem` keywords lang
->                               =  Keyword s
->         | otherwise           =  Varid   s
->
 >
 > lexFracExp                    :: String -> Maybe (String, String)
 > lexFracExp s                  =  do t <- match "." s
@@ -245,6 +240,11 @@ Keywords
 >                                    "infixl", "infixr", "mutual", "abstract",
 >                                    "private", "forall", "using", "hiding",
 >                                    "renaming", "public" ]
+>
+> classify lang s
+>         | s `elem` keywords lang
+>                               =  Keyword s
+>         | otherwise           =  Varid   s
 
 % - - - - - - - - - - - - - - - = - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Phase 2}
