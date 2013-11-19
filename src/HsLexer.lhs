@@ -277,7 +277,7 @@ Keywords
 >                                    "import",   "in",       "infix", "infixl",
 >                                    "infixr",   "instance", "let",   "module",
 >                                    "newtype",  "of",       "then",  "type",
->                                    "where" ]
+>                                    "where", "family" ]
 > keywords Agda                 =  [ "let", "in", "where", "field", "with",
 >                                    "postulate", "primitive", "open", "import",
 >                                    "module", "data", "codata", "record", "infix",
