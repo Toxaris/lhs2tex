@@ -288,6 +288,8 @@ Keywords
 >                                    "renaming", "public" ]
 > keywords Scala                =  [ "def", "var", "val", "type", "trait", "class",
 >                                    "extends", "object", "with", "new", "case",
+>                                    "import", "abstract", "implicit", "match",
+>                                    "super", "this",
 >                                    "if", "else", "where", "for", "override" ]
 > keywords SML                  =  [ "val", "fun", "fn", "structure", "struct",
 >                                    "signature", "sig", "functor", "where",
