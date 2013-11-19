@@ -118,10 +118,15 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >                                 else return (Comment "--" t, u)
 >       where (d, s') = span (== '-') s
 >             (t, u)  = break (== '\n') s'
-> lex' lang ('{' : '-' : '"' : s)
+> lex' Scala ('/' : '/' : s)    = return (Comment "//" t, u) where (t, u) = break (== '\n') s
+> lex' lang ('{' : '-' : '"' : s) | True -- lang `elem` [Haskell, Agda]
 >                               =  do let (t, u) = inlineTeX s
 >                                     v <- match "\"-}" u
 >                                     return (TeX "{-\"" (Text t) "\"-}", v)
+> lex' lang ('/' : '*' : '"' : s) | lang `elem` [Scala]
+>                               =  do let (t, u) = inlineTeX s
+>                                     v <- match "\"*/" u
+>                                     return (TeX "/*\"" (Text t) "\"*/", v)
 > lex' lang ('{' : '-' : '#' : s) | lang `elem` [Haskell, Agda]
 >                               =  do let (t, u) = nested 0 lang s
 >                                     v <- match "#-}" u
@@ -130,6 +135,10 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >                               =  do let (t, u) = nested 0 lang s
 >                                     v <- match "-}" u
 >                                     return (Nested "{-" t "-}", v)
+> lex' lang ('/' : '*' : s)  | lang `elem` [Scala]
+>                               =  do let (t, u) = nested 0 lang s
+>                                     v <- match "*/" u
+>                                     return (Nested "/*" t "*/", v)
 > lex' lang (c : s)
 >     | isSpace c               =  let (t, u) = span isSpace s in return (Space (c : t), u)
 >     | isSpecial lang c        =  Just (Special c, s)
@@ -144,6 +153,7 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >     where
 >     numeral Agda              =  Varid
 >     numeral Haskell           =  Numeral
+>     numeral Scala             =  Numeral
 >
 > lexFracExp                    :: String -> Maybe (String, String)
 > lexFracExp s                  =  do t <- match "." s
@@ -167,8 +177,10 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 
 > varsymid Agda    = Varid
 > varsymid Haskell = Varsym
+> varsymid Scala   = Varsym
 > consymid Agda    = Conid
 > consymid Haskell = Consym
+> consymid Scala   = Consym
 
 %}
 
@@ -192,6 +204,12 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >                               =  '-' <| '}' <| nested n lang s
 > nested n     lang ('{' : '-' : s) | lang `elem` [Haskell, Agda]
 >                               =  '{' <| '-' <| nested (n + 1) lang s
+> nested 0     lang ('*' : '/' : s) | lang `elem` [Scala]
+>                               =  ([], '*':'/':s)
+> nested (n+1) lang ('*' : '/' : s) | lang `elem` [Scala]
+>                               =  '*' <| '/' <| nested n lang s
+> nested n     lang ('/' : '*' : s) | lang `elem` [Scala]
+>                               =  '/' <| '*' <| nested (n + 1) lang s
 > nested n     lang (c : s)     =  c <| nested n lang s
 
 ks, 03.09.2003: The above definition of nested will actually
@@ -221,8 +239,10 @@ I don't expect this to be a problem, though.
 >                                  (c `elem` "!@#$%&*+./<=>?\\^|:-~" ||
 >                                   Data.Char.isSymbol c || Data.Char.isPunctuation c)
 > isSymbol Agda c               =  isIdChar Agda c
+> isSymbol Scala c              =  isSymbol Haskell c
 > isIdChar Haskell c            =  isAlphaNum c || c `elem` "_'"
 > isIdChar Agda c               =  not (isSpecial Agda c || isSpace c)
+> isIdChar Scala c              =  isSymbol Haskell c
 
 > match                         :: String -> String -> Maybe String
 > match p s
@@ -245,6 +265,9 @@ Keywords
 >                                    "infixl", "infixr", "mutual", "abstract",
 >                                    "private", "forall", "using", "hiding",
 >                                    "renaming", "public" ]
+> keywords Scala                =  [ "def", "var", "val", "type", "trait", "class",
+>                                    "extends", "object", "with", "new", "case",
+>                                    "if", "else", "where", "for", "override" ]
 >
 > classify lang s
 >         | s `elem` keywords lang
