@@ -161,6 +161,7 @@ because with some versions of GHC it triggers ambiguity errors with
 >   , Option []    ["verb"]    (NoArg (return, id, [Verb]))                                 "verbatim"
 >   , Option []    ["haskell"] (NoArg (\s -> return $ s { lang = Haskell}, id, []))         "Haskell lexer (default)"
 >   , Option []    ["agda"]    (NoArg (\s -> return $ s { lang = Agda}, id, []))            "Agda lexer"
+>   , Option []    ["sml"]     (NoArg (\s -> return $ s { lang = SML}, id, []))             "Standard ML lexer (default)"
 >   , Option []    ["scala"]   (NoArg (\s -> return $ s { lang = Scala}, id, []))           "Scala lexer"
 >   , Option []    ["pre"]     (NoArg (return, id, [Pre]))                                  "act as ghc preprocessor"
 >   , Option ['o'] ["output"]  (ReqArg (\f -> (\s -> do h <- openOutputFile f

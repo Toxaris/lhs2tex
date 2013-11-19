@@ -127,6 +127,10 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >                               =  do let (t, u) = inlineTeX s
 >                                     v <- match "\"*/" u
 >                                     return (TeX "/*\"" (Text t) "\"*/", v)
+> lex' lang ('(' : '*' : '"' : s) | lang `elem` [SML]
+>                               =  do let (t, u) = inlineTeX s
+>                                     v <- match "\"*)" u
+>                                     return (TeX "(*\"" (Text t) "\"*)", v)
 > lex' lang ('{' : '-' : '#' : s) | lang `elem` [Haskell, Agda]
 >                               =  do let (t, u) = nested 0 lang s
 >                                     v <- match "#-}" u
@@ -139,6 +143,10 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >                               =  do let (t, u) = nested 0 lang s
 >                                     v <- match "*/" u
 >                                     return (Nested "/*" t "*/", v)
+> lex' lang ('(' : '*' : s)  | lang `elem` [SML]
+>                               =  do let (t, u) = nested 0 lang s
+>                                     v <- match "*)" u
+>                                     return (Nested "(*" t "*)", v)
 > lex' lang (c : s)
 >     | isSpace c               =  let (t, u) = span isSpace s in return (Space (c : t), u)
 >     | isSpecial lang c        =  Just (Special c, s)
@@ -154,6 +162,7 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >     numeral Agda              =  Varid
 >     numeral Haskell           =  Numeral
 >     numeral Scala             =  Numeral
+>     numeral SML               =  Numeral
 >
 > lexFracExp                    :: String -> Maybe (String, String)
 > lexFracExp s                  =  do t <- match "." s
@@ -178,9 +187,11 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 > varsymid Agda    = Varid
 > varsymid Haskell = Varsym
 > varsymid Scala   = Varsym
+> varsymid SML     = Varsym
 > consymid Agda    = Conid
 > consymid Haskell = Consym
 > consymid Scala   = Consym
+> consymid SML     = Consym
 
 %}
 
@@ -204,6 +215,12 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >                               =  '-' <| '}' <| nested n lang s
 > nested n     lang ('{' : '-' : s) | lang `elem` [Haskell, Agda]
 >                               =  '{' <| '-' <| nested (n + 1) lang s
+> nested 0     lang ('*' : ')' : s) | lang `elem` [SML]
+>                               =  ([], '*':')':s)
+> nested (n+1) lang ('*' : ')' : s) | lang `elem` [SML]
+>                               =  '*' <| ')' <| nested n lang s
+> nested n     lang ('(' : '*' : s) | lang `elem` [SML]
+>                               =  '(' <| '*' <| nested (n + 1) lang s
 > nested 0     lang ('*' : '/' : s) | lang `elem` [Scala]
 >                               =  ([], '*':'/':s)
 > nested (n+1) lang ('*' : '/' : s) | lang `elem` [Scala]
@@ -240,9 +257,11 @@ I don't expect this to be a problem, though.
 >                                   Data.Char.isSymbol c || Data.Char.isPunctuation c)
 > isSymbol Agda c               =  isIdChar Agda c
 > isSymbol Scala c              =  isSymbol Haskell c
+> isSymbol SML c                =  isSymbol Haskell c
 > isIdChar Haskell c            =  isAlphaNum c || c `elem` "_'"
 > isIdChar Agda c               =  not (isSpecial Agda c || isSpace c)
 > isIdChar Scala c              =  isSymbol Haskell c
+> isIdChar SML c                =  isSymbol Haskell c
 
 > match                         :: String -> String -> Maybe String
 > match p s
@@ -268,6 +287,10 @@ Keywords
 > keywords Scala                =  [ "def", "var", "val", "type", "trait", "class",
 >                                    "extends", "object", "with", "new", "case",
 >                                    "if", "else", "where", "for", "override" ]
+> keywords SML                  =  [ "val", "fun", "fn", "structure", "struct",
+>                                    "signature", "sig", "functor", "where",
+>                                    "type", "datatype", "let", "local", "in", "end",
+>                                    "if", "then", "else", "open", "include" ]
 >
 > classify lang s
 >         | s `elem` keywords lang
