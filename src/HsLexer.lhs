@@ -111,21 +111,23 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 >                                     v <- match "\"" u
 >                                     return (String ("\"" ++ t ++ "\""), v)
 > lex' lang ('-' : '-' : s)
->   | not (null s') && isSymbol lang (head s')
->                               =  case s' of
->                                    (c : s'') -> return (varsymid lang ("--" ++ d ++ [c]), s'')
->   | otherwise                 =  return (Comment "--" t, u)
->   where (d, s') = span (== '-') s
->         (t, u)  = break (== '\n') s'
+>   | lang `elem` [Haskell, Agda]
+>                               = if not (null s') && isSymbol lang (head s')
+>                                 then case s' of
+>                                        (c : s'') -> return (varsymid lang ("--" ++ d ++ [c]), s'')
+>                                 else return (Comment "--" t, u)
+>       where (d, s') = span (== '-') s
+>             (t, u)  = break (== '\n') s'
 > lex' lang ('{' : '-' : '"' : s)
 >                               =  do let (t, u) = inlineTeX s
 >                                     v <- match "\"-}" u
 >                                     return (TeX "{-\"" (Text t) "\"-}", v)
-> lex' lang ('{' : '-' : '#' : s)
->                               =  do let (t, u) = nested 0 s
+> lex' lang ('{' : '-' : '#' : s) | lang `elem` [Haskell, Agda]
+>                               =  do let (t, u) = nested 0 lang s
 >                                     v <- match "#-}" u
 >                                     return (Pragma t, v)
-> lex' lang ('{' : '-' : s)     =  do let (t, u) = nested 0 s
+> lex' lang ('{' : '-' : s)  | lang `elem` [Haskell, Agda]
+>                               =  do let (t, u) = nested 0 lang s
 >                                     v <- match "-}" u
 >                                     return (Nested "{-" t "-}", v)
 > lex' lang (c : s)
@@ -179,15 +181,18 @@ ks, 28.08.2008: New: Agda and Haskell modes.
 > inlineTeX ('\'' : c : s)      =  c <| inlineTeX s
 > inlineTeX ('"' : s)           =  ([], '"' : s)
 > inlineTeX (c : s)             =  c <| inlineTeX s
->
-> nested                        :: Int -> String -> (String, String)
-> nested _     []               =  ([], [])
-> nested 0     ('#' : '-' : '}' : s)
+
+> nested                        :: Int -> Lang -> String -> (String, String)
+> nested _     lang []          =  ([], [])
+> nested 0     lang ('#' : '-' : '}' : s) | lang `elem` [Haskell, Agda]
 >                               =  ([], '#':'-':'}':s)
-> nested 0     ('-' : '}' : s)  =  ([], '-':'}':s)
-> nested (n+1) ('-' : '}' : s)  =  '-' <| '}' <| nested n s
-> nested n     ('{' : '-' : s)  =  '{' <| '-' <| nested (n + 1) s
-> nested n     (c : s)          =  c <| nested n s
+> nested 0     lang ('-' : '}' : s) | lang `elem` [Haskell, Agda]
+>                               =  ([], '-':'}':s)
+> nested (n+1) lang ('-' : '}' : s) | lang `elem` [Haskell, Agda]
+>                               =  '-' <| '}' <| nested n lang s
+> nested n     lang ('{' : '-' : s) | lang `elem` [Haskell, Agda]
+>                               =  '{' <| '-' <| nested (n + 1) lang s
+> nested n     lang (c : s)     =  c <| nested n lang s
 
 ks, 03.09.2003: The above definition of nested will actually
 incorrectly reject programs that contain comments like the

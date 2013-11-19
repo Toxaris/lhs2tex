@@ -175,7 +175,7 @@ because "=" will never occur in a Varid constructor.
 > varid                         =  do x <- satisfy (\ x -> isVarid x && x /= Varid "="); return (string x)
 > conid                         =  do x <- satisfy isConid; return (string x)
 > varsym Agda s                 =  satisfy (\ x -> x == Varsym s || x == Varid s) -- Agda has no symbol/id distinction
-> varsym Haskell s              =  satisfy (== (Varsym s))
+> varsym _ s                    =  satisfy (== (Varsym s))
 >
 > isTeX (TeX _ _ _)             =  True
 > isTeX (Replacement _)         =  True
