@@ -45,7 +45,7 @@ ks, 16.08.2004: added EOF.
 >
 > data Directive                =  Format | Include | Let | File | Options
 >                               |  Align | Separation | Latency | Begin | End | Subst
->                               |  If | Elif | Else | Endif | EOF
+>                               |  If | Elif | Else | Endif | EOF | Lang
 >                                  deriving (Eq, Show)
 
 > data Numbered a               =  No !LineNo a
@@ -92,7 +92,7 @@ Encoding and decoding of commands, environments, and directives.
 >                                    ("options", Options), ("align", Align),
 >                                    ("separation", Separation), ("latency", Latency),
 >                                    ("{", Begin), ("}", End), ("subst", Subst),
->                                    ("EOF",EOF) ]
+>                                    ("EOF",EOF), ("lang", Lang) ]
 >
 > encode                        :: (Representation a) => String -> Maybe a
 > encode s                      =  FM.lookup s (FM.fromList representation)
