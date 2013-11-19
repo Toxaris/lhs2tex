@@ -351,10 +351,9 @@ the corresponding indentation stack |pstack|.
 
 > format (Directive File s)     =  modify (\st -> st{file = withoutSpaces s})
 > format (Directive Options s)  =  modify (\st -> st{opts = trimSpace s})
-> format (Directive Lang s)     =  do liftIO $ hPutStrLn stderr ("set language to " ++ s)
->                                     case encode (trimSpace s) of
->                                       Just l -> modify (\st -> st{lang = l})
->                                       Nothing -> fail $ "bad language: " ++ s
+> format (Directive Lang s)     =  case encode (trimSpace s) of
+>                                    Just l -> modify (\st -> st{lang = l})
+>                                    Nothing -> fail $ "bad language: " ++ s
 >
 > format (Error exc)            =  throwError exc
 >
