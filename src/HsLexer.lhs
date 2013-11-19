@@ -252,6 +252,7 @@ I don't expect this to be a problem, though.
 > isIdChar, isSymbol            :: Lang -> Char -> Bool
 > isSpecial Haskell c           =  c `elem` ",;()[]{}`"
 > isSpecial Agda c              =  c `elem` ";(){}"
+> isSpecial Scala c             =  c `elem` ",;()[]{}"
 > isSymbol Haskell c            =  not (isSpecial Haskell c) && notElem c "'\"" &&
 >                                  (c `elem` "!@#$%&*+./<=>?\\^|:-~" ||
 >                                   Data.Char.isSymbol c || Data.Char.isPunctuation c)
