@@ -262,7 +262,7 @@ I don't expect this to be a problem, though.
 > isSymbol SML c                =  isSymbol Haskell c
 > isIdChar Haskell c            =  isAlphaNum c || c `elem` "_'"
 > isIdChar Agda c               =  not (isSpecial Agda c || isSpace c)
-> isIdChar Scala c              =  isSymbol Haskell c
+> isIdChar Scala c              =  isIdChar Haskell c
 > isIdChar SML c                =  isSymbol Haskell c
 
 > match                         :: String -> String -> Maybe String
