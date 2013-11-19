@@ -350,10 +350,10 @@ the corresponding indentation stack |pstack|.
 > format (Directive Latency s)  =  modify (\st -> st{latency = read s, pstack = []})
 
 > format (Directive File s)     =  modify (\st -> st{file = withoutSpaces s})
-> format (Directive Options s)  =  modify (\st -> st{opts = trim s})
->     where trim                =  dropWhile isSpace >>> reverse >>> dropWhile isSpace >>> reverse
-
+> format (Directive Options s)  =  modify (\st -> st{opts = trimSpace s})
 > format (Error exc)            =  throwError exc
+>
+> trimSpace                     =  dropWhile isSpace >>> reverse >>> dropWhile isSpace >>> reverse
 
 Printing documents.
 %{
