@@ -1,4 +1,4 @@
-\documentclass[10pt]{scrartcl}
+\documentclass[10pt,enabledeprecatedfontcommands]{scrartcl}
 
 % save linebreak; see below
 \let\origlinebreak=\\
@@ -31,7 +31,7 @@
 
 \newcommand*{\PDF}{{\smaller{PDF}}\xspace}
 \newcommand*{\CTAN}{{\smaller{CTAN}}\xspace}
-%format lhs2TeX = "\textrm{lhs}\textsf{2}\TeX"
+%format lhs2TeX = "\textrm{lhs}\textsf{2}\textrm{\TeX}"
 \setdefaultitem{\textbf{--}}{}{}{}
 
 %let doc = True
